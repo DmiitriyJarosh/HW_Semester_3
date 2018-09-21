@@ -6,11 +6,13 @@ import java.util.Queue;
 public class MyPeterson {
     private boolean[] wantFlags;
     private int waiting;
+    private int numOfThreads;
 
-    public MyPeterson () {
+    public MyPeterson (int numOfThreads) {
         waiting = -1;
-        wantFlags = new boolean[2];
-        for (int i = 0; i < 2; i++) {
+        this.numOfThreads = numOfThreads;
+        wantFlags = new boolean[numOfThreads];
+        for (int i = 0; i < numOfThreads; i++) {
             wantFlags[i] = false;
         }
     }
