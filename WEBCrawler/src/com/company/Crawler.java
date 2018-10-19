@@ -1,72 +1,62 @@
 package com.company;
 
-import javafx.util.Pair;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import java.util.Queue;
+import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import static com.company.Main.NUM_OF_DEPTH;
 
 public class Crawler implements Runnable {
 
     private Set<String> pagesVisited;
-    private boolean[] flags;
-    private int num;
-    private Queue<Pair<String, Integer>> pagesToVisit;
-    private boolean flagActive;
+    private ExecutorService ex;
+    private ExecutorService sd;
+    private String url;
+    private int depth;
+    private static final String USER_AGENT =
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1";
 
-    public Crawler(Set<String> pagesVisited, Queue<Pair<String, Integer>> pagesToVisit, boolean[] flags, int num) {
-        this.pagesToVisit = pagesToVisit;
+    public Crawler(String url, int depth, Set<String> pagesVisited, ExecutorService ex, ExecutorService sd) {
+        this.depth = depth;
+        this.ex = ex;
         this.pagesVisited = pagesVisited;
-        this.flagActive = true;
-        this.flags = flags;
-        this.num = num;
+        this.sd = sd;
+        this.url = url;
     }
 
-    private boolean checkFlags() {
-        for (boolean flag : flags) {
-            if (!flag) {
-                return false;
+    public void crawl() {
+        try
+        {
+            Connection connection = Jsoup.connect(url).userAgent(USER_AGENT);
+            Document htmlDocument = connection.get();
+
+            System.out.println("Received web page at " + url);
+
+            Elements linksOnPage = htmlDocument.select("a[href]");
+            System.out.println("Found (" + linksOnPage.size() + ") links");
+            for(Element link : linksOnPage)
+            {
+                ex.execute(new Crawler(link.absUrl("href"), depth + 1, pagesVisited, ex, sd));
             }
+            sd.execute(new DiskSaver(htmlDocument, url));
         }
-        return true;
-    }
-
-    public void CrawlerOff() {
-        flagActive = false;
-    }
-
-    public Pair<String, Integer> getNextURL() {
-        Pair<String, Integer> url = pagesToVisit.poll();
-        if (url == null) {
-            return null;
-        }
-        while (pagesVisited.contains(url.getKey())) {
-            url = pagesToVisit.poll();
-            if (url == null) {
-                return null;
-            }
-        }
-        return url;
-    }
-
-    public void search() {
-        while (flagActive || !checkFlags()) {
-            CrawlerTech crawlerTech = new CrawlerTech();
-            Pair<String, Integer> url = getNextURL();
-            if (url == null || url.getValue() > NUM_OF_DEPTH) {
-                flags[num] = true;
-                continue;
-            }
-            flags[num] = false;
-            crawlerTech.crawl(url);
-            pagesToVisit.addAll(crawlerTech.getLinks());
-            crawlerTech.saveToDisk(url.getKey());
+        catch(IOException e)
+        {
+            System.out.println("Error web page at " + url);
         }
     }
 
     public void run() {
-        search();
-        System.out.println("Thread finished!");
+        if (url == null || depth > NUM_OF_DEPTH || pagesVisited.contains(url)) {
+            return;
+        }
+        pagesVisited.add(url);
+        crawl();
     }
 }
