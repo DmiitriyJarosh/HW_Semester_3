@@ -14,7 +14,8 @@ import static com.company.Main.NUM_OF_DEPTH;
 
 public class Crawler implements Runnable {
 
-    private Set<String> pagesVisited;
+    //private Set<String> pagesVisited;
+    private MyConcurencyListSet<String> pagesVisited;
     private ExecutorService ex;
     private ExecutorService sd;
     private String url;
@@ -22,7 +23,7 @@ public class Crawler implements Runnable {
     private static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1";
 
-    public Crawler(String url, int depth, Set<String> pagesVisited, ExecutorService ex, ExecutorService sd) {
+    public Crawler(String url, int depth, MyConcurencyListSet<String> pagesVisited, ExecutorService ex, ExecutorService sd) {
         this.depth = depth;
         this.ex = ex;
         this.pagesVisited = pagesVisited;

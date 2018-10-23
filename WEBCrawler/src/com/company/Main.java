@@ -13,7 +13,8 @@ public class Main {
     public static final int NUM_OF_DEPTH = 1;
 
     public static void main(String[] args) {
-        Set<String> pagesVisited = new ConcurrentSkipListSet<>();
+        //Set<String> pagesVisited = new ConcurrentSkipListSet<>();
+        MyConcurencyListSet<String> pagesVisited = new MyConcurencyListSet<>();
         String url = "http://www.shaderx.com/";
         final ExecutorService ex = Executors.newFixedThreadPool(NUM_OF_THREADS);
         final ExecutorService sd = Executors.newFixedThreadPool(NUM_OF_THREADS);
