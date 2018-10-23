@@ -13,11 +13,12 @@ public class Main {
     public static final int NUM_OF_DEPTH = 1;
 
     public static void main(String[] args) {
-        //Set<String> pagesVisited = new ConcurrentSkipListSet<>();
         MyConcurencyListSet<String> pagesVisited = new MyConcurencyListSet<>();
         String url = "http://www.shaderx.com/";
-        final ExecutorService ex = Executors.newFixedThreadPool(NUM_OF_THREADS);
-        final ExecutorService sd = Executors.newFixedThreadPool(NUM_OF_THREADS);
+        //final ExecutorService ex = Executors.newFixedThreadPool(NUM_OF_THREADS);
+        //final ExecutorService sd = Executors.newFixedThreadPool(NUM_OF_THREADS);
+        MyThreadPool ex = new MyThreadPool(NUM_OF_THREADS);
+        MyThreadPool sd = new MyThreadPool(NUM_OF_THREADS);
         ex.execute(new Crawler(url, 0, pagesVisited, ex, sd));
         try {
             System.in.read();

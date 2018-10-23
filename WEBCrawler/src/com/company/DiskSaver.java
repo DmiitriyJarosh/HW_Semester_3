@@ -17,7 +17,7 @@ public class DiskSaver implements Runnable {
 
     public void run() {
         String tmp = webpage.outerHtml();
-        try (FileWriter writer = new FileWriter("/home/adminlinux/Desktop/WEBCrawler/webpages/" + url.replaceAll(":", "_").replaceAll("/", "_").replaceAll("\\.", "_") + ".html", false))
+        try (FileWriter writer = new FileWriter("webpages/" + url.replaceAll(":", "_").replaceAll("/", "_").replaceAll("\\.", "_") + ".html", false))
         {
             writer.write(tmp);
             writer.flush();

@@ -36,16 +36,17 @@ public class MyConcurencyListSet <T> {
     public boolean contains(T value) {
         lock.lock();
         if (head == null) {
+            lock.unlock();
             return false;
         }
         Node tmp = head;
         lock.unlock();
-        Node next = head.getNext();
-        while (next != null) {
-            next = tmp.getNext();
+        while (tmp.getNext() != null) {
             if (tmp.getValue() == value) {
+                System.out.println(Thread.currentThread().getId() + " contains finished");
                 return true;
             }
+            tmp = tmp.getNext();
         }
         return false;
     }
