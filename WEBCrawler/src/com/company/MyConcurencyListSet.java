@@ -17,30 +17,41 @@ public class MyConcurencyListSet <T> {
 
     public void add(T value) {
         Node<T> node = new Node<>(value);
-        node.lock();
-        lock.lock();
-        if (head == null) {
-            head = node;
-            tail = node;
-            lock.unlock();
-        } else {
-            Node tmp = tail;
-            tmp.setNext(node);
-            tail = node;
-            lock.unlock();
-            node.setPrev(tmp);
+        try {
+            node.lock();
+            lock.lock();
+            if (head == null) {
+               head = node;
+               tail = node;
+               lock.unlock();
+            } else {
+                Node tmp = tail;
+                tmp.setNext(node);
+                tail = node;
+                lock.unlock();
+                node.setPrev(tmp);
+            }
+            node.unlock();
         }
-        node.unlock();
+        finally {
+            lock.unlock();
+            node.unlock();
+        }
     }
 
     public boolean contains(T value) {
-        lock.lock();
-        if (head == null) {
+        try {
+            lock.lock();
+            if (head == null) {
+                lock.unlock();
+                return false;
+            }
+            Node tmp = head;
             lock.unlock();
-            return false;
         }
-        Node tmp = head;
-        lock.unlock();
+        finally {
+            lock.unlock();
+        }
         while (tmp.getNext() != null) {
             if (tmp.getValue() == value) {
                 System.out.println(Thread.currentThread().getId() + " contains finished");
