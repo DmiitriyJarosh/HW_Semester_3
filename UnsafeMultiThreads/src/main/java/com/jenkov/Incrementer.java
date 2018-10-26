@@ -13,9 +13,13 @@ public class Incrementer implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i < 1000000; i++) {
-            lock.lock();
-            counter.incCounter();
-            lock.unlock();
+            try {
+                lock.lock();
+                counter.incCounter();
+            }
+            finally {
+                lock.unlock();
+            }
         }
     }
 }
