@@ -27,9 +27,13 @@ public class Incrementer implements Runnable {
                 lock.unlock();
             }
             */
-            pet.lock((int)Thread.currentThread().getId() % 2);
-            counter.incCounter();
-            pet.unlock((int)Thread.currentThread().getId() % 2);
+            try {
+                pet.lock((int)Thread.currentThread().getId() % 2);
+                counter.incCounter();
+            }
+            finally {
+                pet.unlock((int)Thread.currentThread().getId() % 2);
+            }
         }
         System.out.println("end of thread");
     }
