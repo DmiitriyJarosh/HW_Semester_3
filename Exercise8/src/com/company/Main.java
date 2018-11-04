@@ -1,12 +1,11 @@
 package com.company;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
 
-    public static final int NUM_OF_THREADS = 4;
-    public static final  int N = 4;
+    public static int NUM_OF_THREADS = 4;
+    public static final int N = 1000000;
 
     public static void main(String[] args) {
 
@@ -27,7 +26,11 @@ public class Main {
         System.out.println(multiRes);
     }
 
-    private static int singleAlgo(int[] a, int[] b) {
+    public static void setNumOfThreads (int n) {
+        NUM_OF_THREADS = n;
+    }
+
+    public static int singleAlgo(int[] a, int[] b) {
         int x = b[0];
         for (int i = 1; i < N; i++) {
             x = a[i] * x + b[i];
@@ -35,9 +38,10 @@ public class Main {
         return x;
     }
 
-    private static int multiAlgo(int[] a, int[] b) {
-        int[] shareA = new int[NUM_OF_THREADS];
-        int[] shareB = new int[NUM_OF_THREADS];
+    public static int multiAlgo(int[] a, int[] b) {
+        int[] shareA = new int[NUM_OF_THREADS + 1];
+        int[] shareB = new int[NUM_OF_THREADS + 1];
+        boolean[] finishFlags = new boolean[NUM_OF_THREADS + 1];
         int[] resA = new int[N + 1];
         Object lock = new Object();
         int[] resB = new int[N + 1];
@@ -45,25 +49,41 @@ public class Main {
         resA[0] = 0;
         int[] tmpB = new int[NUM_OF_THREADS];
         ParalSummator[] summators = new ParalSummator[NUM_OF_THREADS];
-        for (int i = 0; i < NUM_OF_THREADS; i++) {
+        for (int i = 0; i < NUM_OF_THREADS + 1; i++) {
             shareA[i] = -1;
             shareB[i] = -1;
         }
         for (int i = 0; i < NUM_OF_THREADS; i++) {
-            summators[i] = new ParalSummator(a, b, resA, resB, shareA, shareB, tmpB, i * (N / NUM_OF_THREADS), (i + 1) * (N / NUM_OF_THREADS), i, lock);
+            finishFlags[i] = false;
+            summators[i] = new ParalSummator(a, b, resA, resB, shareA, shareB, tmpB, i * (N / NUM_OF_THREADS), (i + 1) * (N / NUM_OF_THREADS), i, lock, finishFlags);
             Thread t = new Thread(summators[i]);
             t.start();
         }
         if (N % NUM_OF_THREADS != 0) {
-            ParalSummator summator = new ParalSummator(a, b, resA, resB, shareA, shareB, tmpB, NUM_OF_THREADS * (N / NUM_OF_THREADS), N, NUM_OF_THREADS, lock);
+            finishFlags[NUM_OF_THREADS] = false;
+            ParalSummator summator = new ParalSummator(a, b, resA, resB, shareA, shareB, tmpB, NUM_OF_THREADS * (N / NUM_OF_THREADS), N, NUM_OF_THREADS, lock, finishFlags);
             summator.run();
+        } else {
+            finishFlags[NUM_OF_THREADS] = true;
         }
-        try {
+
+        boolean flag;
+        do {
+            flag = true;
+            for (boolean flg : finishFlags) {
+                if (!flg) {
+                    flag = false;
+                }
+            }
+        } while (!flag);
+        /*try {
             System.out.println("Enter smth when all threads finish!");
             System.in.read();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
+
         int tmp = N % (N / NUM_OF_THREADS) == 0 ? N / (N / NUM_OF_THREADS) - 1 : N / (N / NUM_OF_THREADS);
         //System.out.println(tmp);
         return resA[N - 1] * tmpB[tmp] + resB[N - 1];

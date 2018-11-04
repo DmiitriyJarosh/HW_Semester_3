@@ -11,12 +11,14 @@ public class ParalSummator implements Runnable {
     private Object lock;
     private int[] shareB;
     private int num;
+    private boolean[] finishFlags;
     private int finish;
 
-    public ParalSummator(int[] a, int[] b, int[] resA, int[] resB, int[] shareA, int[] shareB, int[] tmpB, int start, int finish, int num, Object lock) {
+    public ParalSummator(int[] a, int[] b, int[] resA, int[] resB, int[] shareA, int[] shareB, int[] tmpB, int start, int finish, int num, Object lock, boolean[] finishFlags) {
         this.a = a;
         this.b = b;
         this.lock = lock;
+        this.finishFlags = finishFlags;
         this.tmpB = tmpB;
         this.resA = resA;
         this.resB = resB;
@@ -73,7 +75,8 @@ public class ParalSummator implements Runnable {
             System.out.println(i + ": " + resA[i] + " " + resB[i]);
         }*/
         variableCount();
-        System.out.println("Thread " + num + " finished!");
+        //System.out.println("Thread " + num + " finished!");
+        finishFlags[num] = true;
         //System.out.println(num + ": " + shareA[num] + " " + shareB[num] + " " + tmpB[num]);
     }
 }
