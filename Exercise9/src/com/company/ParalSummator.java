@@ -11,9 +11,11 @@ public class ParalSummator implements Runnable {
     private int[] shareFlags;
     private int num;
     private int finish;
+    private boolean[] finishFlags;
 
-    public ParalSummator(String input, int[] shareL, int[] shareR, int[] shareFlags, int start, int finish, int num, Object lock) {
+    public ParalSummator(String input, int[] shareL, int[] shareR, int[] shareFlags, int start, int finish, int num, Object lock, boolean[] finishFlags) {
         this.input = input.toCharArray();
+        this.finishFlags = finishFlags;
         this.lock = lock;
         this.shareR = shareR;
         this.shareL = shareL;
@@ -51,7 +53,7 @@ public class ParalSummator implements Runnable {
             while (shareFlags[num + i / 2] != i) {
                 synchronized (obj){
                     try {
-                        obj.wait(10);
+                        obj.wait(1);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -82,7 +84,8 @@ public class ParalSummator implements Runnable {
         }
         */
         convergence();
-        System.out.println("Thread " + num + " finished!");
+        finishFlags[num] = true;
+            //System.out.println("Thread " + num + " finished!");
         //System.out.println(num + ": " + shareA[num] + " " + shareB[num] + " " + tmpB[num]);
     }
 }
