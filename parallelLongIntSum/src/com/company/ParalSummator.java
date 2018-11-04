@@ -11,10 +11,12 @@ public class ParalSummator implements Runnable {
     private int[] share;
     private int num;
     private int finish;
+    private boolean[] finishedFlags;
 
-    public ParalSummator(int[] A, int[] B, int[] precount, int[] res, int[] share, int start, int finish, int num) {
+    public ParalSummator(int[] A, int[] B, int[] precount, int[] res, int[] share, int start, int finish, int num, boolean[] finishFlags) {
         this.A = A;
         this.B = B;
+        this.finishedFlags = finishFlags;
         this.precount = precount;
         this.res = res;
         this.share = share;
@@ -79,5 +81,6 @@ public class ParalSummator implements Runnable {
         }
         carryCount(tmp);
         count();
+        finishedFlags[num] = true;
     }
 }

@@ -1,12 +1,11 @@
 package com.company;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
 
     public static final int NUM_OF_THREADS = 4;
-    public static final  int NUM_OF_NUMBERS = 100;
+    public static final  int NUM_OF_NUMBERS = 10000;
 
     public static void main(String[] args) {
 	    int[] bigIntA = new int[NUM_OF_NUMBERS];
@@ -27,12 +26,12 @@ public class Main {
         }
         bigIntB = reverse(bigIntB);
         int[] bigIntSingleRes = sum(bigIntA, bigIntB);
-        int[] bigIntParallelRes = sumParallel(bigIntA, bigIntB);
+        int[] bigIntParallelRes = sumParallel(bigIntA, bigIntB, NUM_OF_THREADS);
         System.out.println(LongIntToStr(bigIntParallelRes));
         System.out.println(LongIntToStr(bigIntSingleRes));
     }
 
-    private static int[] sum(int[] A, int[] B) {
+    public static int[] sum(int[] A, int[] B) {
         int carry = 0;
         int[] sum = new int[NUM_OF_NUMBERS + 1];
         for (int i = 0; i < NUM_OF_NUMBERS; i++) {
@@ -57,7 +56,7 @@ public class Main {
         return res;
     }
 
-    private static int[] reverse(int[] A) {
+    public static int[] reverse(int[] A) {
         for (int i = 0; i < 50; i++) {
             int tmp = A[i];
             A[i] = A[NUM_OF_NUMBERS - i - 1];
@@ -66,28 +65,38 @@ public class Main {
         return A;
     }
 
-    private static int[] sumParallel(int[] A, int[] B) {
+    public static int[] sumParallel(int[] A, int[] B, int NUM_OF_THREADS) {
         int[] res = new int[NUM_OF_NUMBERS + 1];
         int[] share = new int[NUM_OF_NUMBERS];
+        boolean[] finishFlags = new boolean[NUM_OF_THREADS + 1];
         int[] precount = new int[NUM_OF_NUMBERS + 1];
         ParalSummator[] summators = new ParalSummator[NUM_OF_THREADS];
         for (int i = 0; i < NUM_OF_NUMBERS; i++) {
             share[i] = -1;
         }
         for (int i = 0; i < NUM_OF_THREADS; i++) {
-            summators[i] = new ParalSummator(A, B, precount, res, share, i * (NUM_OF_NUMBERS / NUM_OF_THREADS), (i + 1) * (NUM_OF_NUMBERS / NUM_OF_THREADS), i);
+            finishFlags[i] = false;
+            summators[i] = new ParalSummator(A, B, precount, res, share, i * (NUM_OF_NUMBERS / NUM_OF_THREADS), (i + 1) * (NUM_OF_NUMBERS / NUM_OF_THREADS), i, finishFlags);
             Thread t = new Thread(summators[i]);
             t.start();
         }
         if (NUM_OF_NUMBERS % NUM_OF_THREADS != 0) {
-            ParalSummator summator = new ParalSummator(A, B, precount, res, share, NUM_OF_THREADS * (NUM_OF_NUMBERS / NUM_OF_THREADS), NUM_OF_NUMBERS, NUM_OF_THREADS);
+            finishFlags[NUM_OF_THREADS] = false;
+            ParalSummator summator = new ParalSummator(A, B, precount, res, share, NUM_OF_THREADS * (NUM_OF_NUMBERS / NUM_OF_THREADS), NUM_OF_NUMBERS, NUM_OF_THREADS, finishFlags);
             summator.run();
+        } else {
+            finishFlags[NUM_OF_THREADS] = true;
         }
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        boolean flag;
+        do {
+            flag = true;
+            for (boolean flg : finishFlags) {
+                if (!flg) {
+                    flag = false;
+                }
+            }
+        } while (!flag);
+
         return res;
     }
 
