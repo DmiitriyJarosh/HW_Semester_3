@@ -23,26 +23,16 @@ public class Node <T> {
     }
 
     public Node getNext() {
-        try {
-            lock.lock();
-            Node tmp = next;
-            lock.unlock();
-        }
-        finally {
-            lock.unlock();
-        }
+        lock.lock();
+        Node tmp = next;
+        lock.unlock();
         return tmp;
     }
 
     public T getValue() {
-        try {
-            lock.lock();
-            T tmp = value;
-            lock.unlock();
-        }
-        finally {
-            lock.unlock();
-        }
+        lock.lock();
+        T tmp = value;
+        lock.unlock();
         return tmp;
     }
 
@@ -55,14 +45,9 @@ public class Node <T> {
     }
 
     public Node getPrev() {
-        try {
-            lock.lock();
-            Node tmp = prev;
-            lock.unlock();
-        }
-        finally {
-            lock.unlock();
-        }
+        lock.lock();
+        Node tmp = prev;
+        lock.unlock();
         return tmp;
     }
 

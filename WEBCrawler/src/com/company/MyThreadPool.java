@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 public class MyThreadPool implements Executor, AutoCloseable {
-    private final Queue<Runnable> workQueue = new ConcurrentLinkedQueue<>();
+    private final MyConcurrentQueue<Runnable> workQueue = new MyConcurrentQueue<>();
     private volatile boolean isRunning = true;
     private Thread[] threads;
     //private static final int NUM_OF_THREADS = 4;

@@ -19,13 +19,37 @@ public class Main {
         //final ExecutorService sd = Executors.newFixedThreadPool(NUM_OF_THREADS);
         MyThreadPool ex = new MyThreadPool(NUM_OF_THREADS);
         MyThreadPool sd = new MyThreadPool(NUM_OF_THREADS);
-        ex.execute(new Crawler(url, 0, pagesVisited, ex, sd));
-        try {
-            System.in.read();
-            ex.shutdown();
-            sd.shutdown();
-        } catch (IOException e) {
-            e.printStackTrace();
+        Counter cntEx = new Counter();
+        Counter cntSd = new Counter();
+        cntEx.inc();
+        ex.execute(new Crawler(url, 0, pagesVisited, ex, sd, cntEx, cntSd));
+        while (cntEx.getCount() != 0 || cntSd.getCount() != 0) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        ex.shutdown();
+        sd.shutdown();
+    }
+
+
+    public static void CrawlTest(String url, int NUM_OF_THREADS, MyConcurencyListSet<String> pagesVisited) {
+        MyThreadPool ex = new MyThreadPool(NUM_OF_THREADS);
+        MyThreadPool sd = new MyThreadPool(NUM_OF_THREADS);
+        Counter cntEx = new Counter();
+        Counter cntSd = new Counter();
+        cntEx.inc();
+        ex.execute(new Crawler(url, 0, pagesVisited, ex, sd, cntEx, cntSd));
+        while (cntEx.getCount() != 0 || cntSd.getCount() != 0) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        ex.shutdown();
+        sd.shutdown();
     }
 }

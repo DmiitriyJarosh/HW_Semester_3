@@ -9,10 +9,12 @@ public class DiskSaver implements Runnable {
 
     private Document webpage;
     private String url;
+    private Counter cntSd;
 
-    public DiskSaver(Document webpage, String url) {
+    public DiskSaver(Document webpage, String url, Counter cntSd) {
         this.webpage = webpage;
         this.url = url;
+        this.cntSd = cntSd;
     }
 
     public void run() {
@@ -24,6 +26,9 @@ public class DiskSaver implements Runnable {
         }
         catch(IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            cntSd.dec();
         }
     }
 }
