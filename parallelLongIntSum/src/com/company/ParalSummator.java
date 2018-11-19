@@ -9,13 +9,15 @@ public class ParalSummator implements Runnable {
     private int[] precount;
     private int start;
     private int[] share;
+    private int[] shareRes;
     private int num;
     private int finish;
     private boolean[] finishedFlags;
 
-    public ParalSummator(int[] A, int[] B, int[] precount, int[] res, int[] share, int start, int finish, int num, boolean[] finishFlags) {
+    public ParalSummator(int[] A, int[] B, int[] precount, int[] res, int[] share, int[] shareRes, int start, int finish, int num, boolean[] finishFlags) {
         this.A = A;
         this.B = B;
+        this.shareRes = shareRes;
         this.finishedFlags = finishFlags;
         this.precount = precount;
         this.res = res;
@@ -55,11 +57,19 @@ public class ParalSummator implements Runnable {
     }
 
     private void carryCount(int carry) {
-        int tmp;
+        if (carry == 1) {
+            while (shareRes[num - 1] == -1) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            carry = shareRes[num - 1];
+        }
         for (int i = start; i < finish; i++) {
-            tmp = precount[i + 1];
             precount[i + 1] = operator(carry, precount[i + 1]);
-            carry = tmp;
+            carry = precount[i + 1];
         }
     }
 
@@ -67,6 +77,7 @@ public class ParalSummator implements Runnable {
         for (int i = start; i < finish; i++) {
             res[i] = (A[i] + B[i] + (precount[i] == 2 ? 1 : 0)) % 10;
         }
+        shareRes[num] = A[finish - 1] + B[finish - 1] + (precount[finish - 1] == 2 ? 1 : 0) >= 10 ? 2 : 0;
     }
 
 
@@ -74,7 +85,13 @@ public class ParalSummator implements Runnable {
         preCount();
         int tmp;
         if (num != 0) {
-            while (share[num - 1] == -1) {}
+            while (share[num - 1] == -1) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             tmp = share[num - 1];
         } else {
             tmp = 0;
