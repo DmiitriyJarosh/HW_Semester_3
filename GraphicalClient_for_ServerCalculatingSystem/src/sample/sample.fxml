@@ -18,13 +18,11 @@
          <Button fx:id="buttonStart" disable="true" onAction="#pressStart"> Start! </Button>
          <Button fx:id="buttonBreak" disable="true" onAction="#pressBreak"> Break </Button>
          <ComboBox fx:id="comboBoxFilter" onAction="#choice" prefWidth="150.0" />
-         <Button fx:id="buttonUpdateFilters" onAction="#pressUpdateFilters" text="Update Filters" />
          <Button fx:id="buttonExit" maxWidth="60" onAction="#pressExit"> Exit </Button>
      </buttons>
    </ButtonBar>
    <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.rowIndex="3">
      <buttons>
-         <TextField fx:id="pathToImage" maxWidth="200" minWidth="200" />
          <Button fx:id="buttonLoad" onAction="#pressLoad" prefHeight="34.0" prefWidth="147.0"> Load image </Button>
      </buttons>
    </ButtonBar>

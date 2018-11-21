@@ -108,6 +108,9 @@ public class Receiver implements Runnable {
                 sendImage(image);
             } else {
                 System.out.println("No filter have been chosen!!!");
+                client.getController().setStarted(false);
+                client.getController().getButtonBreak().setDisable(true);
+                client.getController().getButtonStart().setDisable(false);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -174,11 +177,8 @@ public class Receiver implements Runnable {
                 for (int j = 0; j < height; j++) {
                     if (!askToBreak) {
                         image.setRGB(i, j, Integer.parseInt(pixels[j]));
-                        //image.setRGB(i, j, Integer.parseInt(in.readUTF()));
-                        //sendMSG("Ready!");
                         progressUpdater.setProgress((i * height + j) / (double) (height * width) / 3.0 + 2.0 / 3);
                     } else {
-                        in.readUTF();
                         progressUpdater.setProgress(0);
                         sendMSG("BREAK");
                         started = false;

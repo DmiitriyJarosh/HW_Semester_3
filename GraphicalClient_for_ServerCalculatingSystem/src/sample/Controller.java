@@ -10,14 +10,16 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 
+import java.io.File;
 import java.util.List;
 
 public class Controller {
 
     public Controller() {
         client = Main.client;
-        client.setController(this);
+        Main.controller = this;
     }
 
     private Client client;
@@ -29,10 +31,9 @@ public class Controller {
     private Button buttonStart;
 
     @FXML
-    private Button buttonUpdateFilters;
-
-    @FXML
     private ProgressBar progressBar;
+
+    private static final FileChooser fileChooser = new FileChooser();
 
     private volatile boolean started = false;
 
@@ -44,9 +45,6 @@ public class Controller {
 
     @FXML
     private ImageView imageView;
-
-    @FXML
-    private TextField pathToImage;
 
     @FXML
     private ComboBox<String> comboBoxFilter;
@@ -91,24 +89,26 @@ public class Controller {
     }
 
     @FXML
-    private void pressUpdateFilters() {
-        List<String> list = client.getFilterList();
-        ObservableList<String> filters = comboBoxFilter.getItems();
-        filters.addAll(list);
-        comboBoxFilter.setItems(filters);
-        buttonUpdateFilters.setDisable(true);
+    public ComboBox<String> getComboBoxFilter() {
+        return comboBoxFilter;
     }
 
     @FXML
     private void pressLoad(ActionEvent event) {
-        client.loadImage(pathToImage.getText());
-        if (client.getBufferedImage() != null) {
-            Image image = SwingFXUtils.toFXImage(client.getBufferedImage(), null);
-            imageView.setImage(image);
-            buttonStart.setDisable(false);
+        File file = fileChooser.showOpenDialog(Main.primaryStage);
+        if (file != null) {
+            client.loadImage(file);
+            if (client.getBufferedImage() != null) {
+                Image image = SwingFXUtils.toFXImage(client.getBufferedImage(), null);
+                imageView.setImage(image);
+                buttonStart.setDisable(false);
+            } else {
+                buttonStart.setDisable(true);
+            }
         } else {
             buttonStart.setDisable(true);
         }
+
     }
 
     @FXML

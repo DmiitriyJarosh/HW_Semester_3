@@ -13,11 +13,14 @@ public class Main extends Application {
 
 
     public static final Client client = new Client();
+    public static Controller controller;
+    public static Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        this.primaryStage = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        client.setImageView();
+        client.setController(controller);
         primaryStage.setTitle("Client");
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.setResizable(false);

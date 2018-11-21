@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -33,6 +34,11 @@ public class Client {
 
     public void setController(Controller controller) {
         this.controller = controller;
+        List<String> list = getFilterList();
+        ObservableList<String> filters = controller.getComboBoxFilter().getItems();
+        filters.addAll(list);
+        controller.getComboBoxFilter().setItems(filters);
+        setImageView();
     }
 
     public void setBufferedImage(BufferedImage bufferedImage) {
@@ -43,7 +49,7 @@ public class Client {
         return bufferedImage;
     }
 
-    public void setImageView() {
+    private void setImageView() {
         this.imageView = controller.getImageView();
         try {
             Image image = SwingFXUtils.toFXImage(ImageIO.read(new File(defaultImageFilename)), null);
@@ -94,12 +100,9 @@ public class Client {
         this.filterList = filterList;
     }
 
-    public void loadImage(String pathToImage) {
+    public void loadImage(File image) {
         try {
-            File file = new File(pathToImage);
-            if (file.isFile()) {
-                bufferedImage = ImageIO.read(file);
-            }
+            bufferedImage = ImageIO.read(image);
         } catch (IOException e) {
             e.printStackTrace();
         }

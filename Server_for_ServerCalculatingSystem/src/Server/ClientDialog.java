@@ -87,13 +87,12 @@ public class ClientDialog implements Runnable {
                 String tmp = in.readUTF();
                 if (!tmp.equals("BREAK")) {
                     String[] pixels = tmp.split("\\|");
-                    //sendMSG("Ready!");
-
                     for (int j = 0; j < height; j++) {
                         image.setRGB(i, j, Integer.parseInt(pixels[j]));
                     }
                     sendMSG("Ready");
                 } else {
+                    System.out.println("receive break");
                     return null;
                 }
 
@@ -177,7 +176,6 @@ public class ClientDialog implements Runnable {
                             continue;
                     }
                     if (imageModifier.getProgress() == 1) {
-                        //System.out.println("@@");
                         sendMSG("FINISHED");
                         in.readUTF();
                         sendImage(imageModifier.getImage());
