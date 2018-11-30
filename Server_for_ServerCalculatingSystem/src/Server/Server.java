@@ -24,19 +24,14 @@ public class Server {
     }
 
     public List<String> loadFiltersList() {
-        //TO DO
         List<String> list = new LinkedList<>();
         try {
             BufferedReader in = new BufferedReader(new FileReader(filename));
             while (in.ready()) {
                 list.add(in.readLine());
             }
-//            for (String s : list) {
-//                System.out.println("@: " + s);
-//            }
         } catch (Exception e) {
             System.out.println("Config file not found!!!");
-            //e.printStackTrace();
         }
         return list;
     }
@@ -50,6 +45,6 @@ public class Server {
     }
 
     public void addClient(Socket socket) {
-        clientPool.submit(new ClientDialog(socket, this));
+        new Thread(new ClientDialog(socket, this)).start();
     }
 }

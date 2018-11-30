@@ -79,10 +79,12 @@ public class Client {
     public void disconnect() {
         if (receiver.isStarted()) {
             receiver.setAskToBreak(true);
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            while (receiver.isStarted()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
         receiver.disconnect();
