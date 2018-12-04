@@ -212,6 +212,14 @@ public class Receiver implements Runnable {
     public void run() {
         String line;
 
+        try {
+            synchronized (this) {
+                this.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         while (active) {
                 try {
                     IOlock.lock();
@@ -220,6 +228,13 @@ public class Receiver implements Runnable {
                         sendMSG("BREAK");
                         started = false;
                         askToBreak = false;
+                        try {
+                            synchronized (this) {
+                                this.wait();
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                     if (askToStart) {
                         sendStartMSG(selectedFilter, image);
@@ -244,6 +259,13 @@ public class Receiver implements Runnable {
                                 //ImageIO.write(client.getBufferedImage(), "jpg", new File("test2.jpg"));
                                 client.showImage();
                                 finish();
+                                try {
+                                    synchronized (this) {
+                                        this.wait();
+                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                                 break;
                         }
                     }

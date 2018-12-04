@@ -22,10 +22,12 @@ public class Client {
     private List<String> filterList;
     private String selectedFilter;
     private Receiver receiver;
+    private Thread receiverThread;
 
     public Client() {
         receiver = new Receiver(this);
-        new Thread(receiver).start();
+        receiverThread = new Thread(receiver);
+        receiverThread.start();
     }
 
     public Controller getController() {
@@ -75,6 +77,9 @@ public class Client {
         receiver.setSelectedFilter(selectedFilter);
         receiver.setImage(bufferedImage);
         receiver.setAskToStart(true);
+        synchronized (receiver) {
+            receiver.notify();
+        }
     }
     public void disconnect() {
         if (receiver.isStarted()) {
