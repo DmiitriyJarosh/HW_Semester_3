@@ -122,7 +122,7 @@ public class ClientDialog implements Runnable {
         String line = null;
         while (true) {
             try {
-                if (in.available() != 0) {
+                if (in.available() != 0 || imageModifier == null) {
                     line = in.readUTF();
                     switch (line) {
                         case "START":
