@@ -82,9 +82,9 @@ public class Client {
     public void disconnect() {
         if (receiver.isStarted()) {
             receiver.setFinishFlag(true);
-            receiver.setAskToBreak(true);
             synchronized (this) {
                 try {
+                    receiver.setAskToBreak(true);
                     this.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
