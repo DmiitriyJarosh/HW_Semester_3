@@ -22,12 +22,10 @@ public class Client {
     private List<String> filterList;
     private String selectedFilter;
     private Receiver receiver;
-    private Thread receiverThread;
 
     public Client() {
         receiver = new Receiver(this);
-        receiverThread = new Thread(receiver);
-        receiverThread.start();
+        new Thread(receiver).start();
     }
 
     public Controller getController() {
@@ -83,10 +81,11 @@ public class Client {
     }
     public void disconnect() {
         if (receiver.isStarted()) {
+            receiver.setFinishFlag(true);
             receiver.setAskToBreak(true);
-            while (receiver.isStarted()) {
+            synchronized (this) {
                 try {
-                    Thread.sleep(1);
+                    this.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

@@ -15,6 +15,7 @@ public class Receiver implements Runnable {
     private Socket socket;
     private volatile boolean started;
     private Client client;
+    private volatile boolean finishFlag;
     private volatile boolean askToStart;
     private String selectedFilter;
     private volatile boolean askToBreak;
@@ -29,6 +30,7 @@ public class Receiver implements Runnable {
 
     public Receiver(Client client) {
         active = true;
+        finishFlag = false;
         askToStart = false;
         askToBreak = false;
         IOlock = new ReentrantLock();
@@ -49,6 +51,10 @@ public class Receiver implements Runnable {
 
     public void setAskToBreak(boolean askToBreak) {
         this.askToBreak = askToBreak;
+    }
+
+    public void setFinishFlag(boolean finishFlag) {
+        this.finishFlag = finishFlag;
     }
 
     public void setAskToStart(boolean askToStart) {
@@ -148,6 +154,19 @@ public class Receiver implements Runnable {
                         started = false;
                         System.out.println("send break");
                         askToBreak = false;
+                        if (!finishFlag) {
+                            try {
+                                synchronized (this) {
+                                    this.wait();
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            synchronized (client) {
+                                client.notify();
+                            }
+                        }
                         return;
                     }
                 }
@@ -184,6 +203,19 @@ public class Receiver implements Runnable {
                         started = false;
                         System.out.println("receive break");
                         askToBreak = false;
+                        if (!finishFlag) {
+                            try {
+                                synchronized (this) {
+                                    this.wait();
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            synchronized (client) {
+                                client.notify();
+                            }
+                        }
                         return null;
                     }
                 }
@@ -221,13 +253,14 @@ public class Receiver implements Runnable {
         }
 
         while (active) {
-                try {
-                    IOlock.lock();
-                    if (askToBreak) {
-                        progressUpdater.setProgress(0);
-                        sendMSG("BREAK");
-                        started = false;
-                        askToBreak = false;
+            try {
+                IOlock.lock();
+                if (askToBreak) {
+                    progressUpdater.setProgress(0);
+                    sendMSG("BREAK");
+                    started = false;
+                    askToBreak = false;
+                    if (!finishFlag) {
                         try {
                             synchronized (this) {
                                 this.wait();
@@ -235,49 +268,49 @@ public class Receiver implements Runnable {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                    }
-                    if (askToStart) {
-                        sendStartMSG(selectedFilter, image);
-                        askToStart = false;
-                    }
-                    if (started) {
-                        line = in.readUTF();
-                        switch (line) {
-                            case "PROGRESS":
-                                sendMSG("Ready!");
-                                progressUpdater.setProgress(Double.parseDouble(in.readUTF()) / 3.0 + (1.0 / 3));
-                                sendMSG("Ready!");
-                                break;
-                            case "FINISHED":
-                                sendMSG("Ready!");
-                                BufferedImage image = receiveImage();
-                                if (image == null) {
-                                    continue;
-                                }
-                                client.setBufferedImage(image);
-
-                                //ImageIO.write(client.getBufferedImage(), "jpg", new File("test2.jpg"));
-                                client.showImage();
-                                finish();
-                                try {
-                                    synchronized (this) {
-                                        this.wait();
-                                    }
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
+                    } else {
+                        synchronized (client) {
+                            client.notify();
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    IOlock.unlock();
                 }
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
+                if (askToStart) {
+                    askToStart = false;
+                    sendStartMSG(selectedFilter, image);
+                }
+                if (started) {
+                    line = in.readUTF();
+                    switch (line) {
+                        case "PROGRESS":
+                            sendMSG("Ready!");
+                            progressUpdater.setProgress(Double.parseDouble(in.readUTF()) / 3.0 + (1.0 / 3));
+                            sendMSG("Ready!");
+                            break;
+                        case "FINISHED":
+                            sendMSG("Ready!");
+                            BufferedImage image = receiveImage();
+                            if (image == null) {
+                                continue;
+                            }
+                            client.setBufferedImage(image);
+
+                            //ImageIO.write(client.getBufferedImage(), "jpg", new File("test2.jpg"));
+                            client.showImage();
+                            finish();
+                            try {
+                                synchronized (this) {
+                                    this.wait();
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                    }
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                IOlock.unlock();
             }
         }
     }
