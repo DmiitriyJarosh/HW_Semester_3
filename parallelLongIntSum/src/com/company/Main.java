@@ -3,37 +3,79 @@ package com.company;
 import java.util.Scanner;
 
 public class Main {
+    public static int NUM_OF_NUMBERS;
+    public static int NUM_OF_THREADS = 4;
+    public static int STEP;
+    public static volatile Carry[] shareCarry;
+    static volatile Carry[] carries;
+    static volatile int counter;
 
-    public static final int NUM_OF_THREADS = 4;
-    public static final  int NUM_OF_NUMBERS = 8;
-
-    public static void main(String[] args) {
-	    int[] bigIntA = new int[NUM_OF_NUMBERS];
-	    int[] bigIntB = new int[NUM_OF_NUMBERS];
-	    for (int i = 0; i < NUM_OF_NUMBERS; i++) {
-	        bigIntA[i] = 0;
-	        bigIntB[i] = 0;
-        }
+    public static void main(String[] args)  {
         Scanner sc = new Scanner(System.in);
-	    String A = sc.nextLine();
-	    for (int i = 0; i < A.length(); i++) {
-	        bigIntA[NUM_OF_NUMBERS - i - 1] = A.charAt(A.length() - i - 1) - '0';
+        String A = sc.nextLine();
+        String B = sc.nextLine();
+        NUM_OF_NUMBERS = Math.max(A.length(), B.length()) + 1;
+        STEP = NUM_OF_NUMBERS / NUM_OF_THREADS;
+
+        int[] bigIntA = new int[NUM_OF_NUMBERS];
+        int[] bigIntB = new int[NUM_OF_NUMBERS];
+        for (int i = 0; i < NUM_OF_NUMBERS; i++) {
+            bigIntA[i] = 0;
+            bigIntB[i] = 0;
+        }
+
+        for (int i = 0; i < A.length(); i++) {
+            bigIntA[NUM_OF_NUMBERS - i - 1] = A.charAt(A.length() - i - 1) - '0';
         }
         bigIntA = reverse(bigIntA);
-	    String B = sc.nextLine();
+
         for (int i = 0; i < B.length(); i++) {
             bigIntB[NUM_OF_NUMBERS - i - 1] = B.charAt(B.length() - i - 1) - '0';
         }
         bigIntB = reverse(bigIntB);
-        int[] bigIntSingleRes = sum(bigIntA, bigIntB);
-        int[] bigIntParallelRes = sumParallel(bigIntA, bigIntB, NUM_OF_THREADS);
-        System.out.println(LongIntToStr(bigIntParallelRes));
-        System.out.println(LongIntToStr(bigIntSingleRes));
+        try {
+            int[] res = MultiSum(bigIntA, bigIntB);
+            System.out.print("ParalSum res: ");
+            printLong(res);
+            res = sum (bigIntA, bigIntB);
+            System.out.print("SingleSum res: ");
+            printLong(res);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int[] MultiSum(int[] bigIntA, int[] bigIntB) throws InterruptedException {
+
+        if (NUM_OF_NUMBERS < NUM_OF_THREADS) {
+            return sum(bigIntA, bigIntB);
+        }
+
+        Object sync = new Object();
+        Thread[] threads = new Thread[NUM_OF_THREADS];
+        carries = new Carry[NUM_OF_NUMBERS];
+        int[] res = new int[NUM_OF_NUMBERS];
+        shareCarry = new Carry[NUM_OF_THREADS];
+
+        for (int i = 0; i < NUM_OF_THREADS; i++) {
+            if (i == NUM_OF_THREADS - 1) {
+                threads[i] = new Thread(new ParalSum(i * STEP, NUM_OF_NUMBERS, bigIntA, bigIntB, carries, res, sync));
+            } else {
+                threads[i] = new Thread(new ParalSum(i * STEP, STEP * (i + 1), bigIntA, bigIntB, carries, res, sync));
+            }
+            threads[i].start();
+        }
+
+        for (int i = 0; i < NUM_OF_THREADS; i++) {
+            threads[i].join();
+        }
+
+        return res;
     }
 
     public static int[] sum(int[] A, int[] B) {
         int carry = 0;
-        int[] sum = new int[NUM_OF_NUMBERS + 1];
+        int[] sum = new int[NUM_OF_NUMBERS];
         for (int i = 0; i < NUM_OF_NUMBERS; i++) {
             sum[i] = (A[i] + B[i] + carry) % 10;
             carry = (A[i] + B[i] + carry) / 10;
@@ -41,22 +83,20 @@ public class Main {
         return sum;
     }
 
-    private static String LongIntToStr(int[] A) {
+    private static void printLong(int[] A) {
         boolean flag = false;
-        A = reverse(A);
-        String res = "";
-        for (int i = 0; i < NUM_OF_NUMBERS; i++) {
-            if (A[i] != 0) {
-                flag = true;
-            }
+        for (int i = A.length - 1; i >= 0; i--) {
             if (flag) {
-                res += A[i];
+                System.out.print(A[i]);
+            } else if (A[i] != 0 && !flag) {
+                flag = true;
+                System.out.print(A[i]);
             }
         }
-        return res;
+        System.out.println();
     }
 
-    public static int[] reverse(int[] A) {
+    private static int[] reverse(int[] A) {
         int tmp;
         for (int i = 0; i < ((NUM_OF_NUMBERS % 2 == 0) ? NUM_OF_NUMBERS / 2 : NUM_OF_NUMBERS / 2 + 1); i++) {
             tmp = A[i];
@@ -65,42 +105,4 @@ public class Main {
         }
         return A;
     }
-
-    public static int[] sumParallel(int[] A, int[] B, int NUM_OF_THREADS) {
-        int[] res = new int[NUM_OF_NUMBERS + 1];
-        int[] share = new int[NUM_OF_THREADS + 1];
-        int[] shareRes = new int[NUM_OF_THREADS + 1];
-        boolean[] finishFlags = new boolean[NUM_OF_THREADS + 1];
-        int[] precount = new int[NUM_OF_NUMBERS + 1];
-        ParalSummator[] summators = new ParalSummator[NUM_OF_THREADS];
-        for (int i = 0; i < NUM_OF_THREADS + 1; i++) {
-            share[i] = -1;
-            shareRes[i] = -1;
-        }
-        for (int i = 0; i < NUM_OF_THREADS; i++) {
-            finishFlags[i] = false;
-            summators[i] = new ParalSummator(A, B, precount, res, share, shareRes,i * (NUM_OF_NUMBERS / NUM_OF_THREADS), (i + 1) * (NUM_OF_NUMBERS / NUM_OF_THREADS), i, finishFlags);
-            Thread t = new Thread(summators[i]);
-            t.start();
-        }
-        if (NUM_OF_NUMBERS % NUM_OF_THREADS != 0) {
-            finishFlags[NUM_OF_THREADS] = false;
-            ParalSummator summator = new ParalSummator(A, B, precount, res, share, shareRes,NUM_OF_THREADS * (NUM_OF_NUMBERS / NUM_OF_THREADS), NUM_OF_NUMBERS, NUM_OF_THREADS, finishFlags);
-            summator.run();
-        } else {
-            finishFlags[NUM_OF_THREADS] = true;
-        }
-        boolean flag;
-        do {
-            flag = true;
-            for (boolean flg : finishFlags) {
-                if (!flg) {
-                    flag = false;
-                }
-            }
-        } while (!flag);
-
-        return res;
-    }
-
 }
