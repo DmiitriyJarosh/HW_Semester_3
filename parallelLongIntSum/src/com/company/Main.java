@@ -34,7 +34,7 @@ public class Main {
         }
         bigIntB = reverse(bigIntB);
         try {
-            int[] res = MultiSum(bigIntA, bigIntB);
+            int[] res = multiSum(bigIntA, bigIntB);
             System.out.print("ParalSum res: ");
             printLong(res);
             res = sum (bigIntA, bigIntB);
@@ -45,7 +45,7 @@ public class Main {
         }
     }
 
-    public static int[] MultiSum(int[] bigIntA, int[] bigIntB) throws InterruptedException {
+    public static int[] multiSum(int[] bigIntA, int[] bigIntB) throws InterruptedException {
 
         if (NUM_OF_NUMBERS < NUM_OF_THREADS) {
             return sum(bigIntA, bigIntB);
@@ -73,6 +73,31 @@ public class Main {
         return res;
     }
 
+    public static void setNumOfThreads(int n) {
+        NUM_OF_THREADS = n;
+    }
+
+    public static void setSTEP(int STEP) {
+        Main.STEP = STEP;
+    }
+
+    public static void setNumOfNumbers(int numOfNumbers) {
+        NUM_OF_NUMBERS = numOfNumbers;
+    }
+
+    public static int[] testMulti(int[] A, int[] B) {
+        try {
+            return multiSum(A, B);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static int[] testSingle(int[] A, int[] B) {
+        return sum(A, B);
+    }
+
     public static int[] sum(int[] A, int[] B) {
         int carry = 0;
         int[] sum = new int[NUM_OF_NUMBERS];
@@ -96,7 +121,7 @@ public class Main {
         System.out.println();
     }
 
-    private static int[] reverse(int[] A) {
+    public static int[] reverse(int[] A) {
         int tmp;
         for (int i = 0; i < ((NUM_OF_NUMBERS % 2 == 0) ? NUM_OF_NUMBERS / 2 : NUM_OF_NUMBERS / 2 + 1); i++) {
             tmp = A[i];
