@@ -64,8 +64,9 @@ public class Crawler implements Runnable {
             cntEx.dec();
             return;
         }
-        pagesVisited.add(url);
-        crawl();
+        if (pagesVisited.add(url)) {
+            crawl();
+        }
         cntEx.dec();
     }
 }
