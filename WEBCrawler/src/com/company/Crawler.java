@@ -44,7 +44,7 @@ public class Crawler implements Runnable {
 
             Elements linksOnPage = htmlDocument.select("a[href]");
             //System.out.println("Found (" + linksOnPage.size() + ") links");
-            for(Element link : linksOnPage)
+            for (Element link : linksOnPage)
             {
                 cntEx.inc();
                 ex.execute(new Crawler(link.absUrl("href"), depth + 1, pagesVisited, ex, sd, cntEx, cntSd));
