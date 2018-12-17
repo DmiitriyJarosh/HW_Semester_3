@@ -19,6 +19,10 @@ public class MyConcurencyListSet <T> {
         Node<T> node = new Node<>(value);
         node.lock();
         lock.lock();
+        if (Contains(value)) {
+            lock.unlock();
+            return false;
+        }
         if (head == null) {
             head = node;
             tail = node;
@@ -31,6 +35,7 @@ public class MyConcurencyListSet <T> {
             node.setPrev(tmp);
         }
         node.unlock();
+        return true;
     }
 
     public boolean contains(T value) {
@@ -41,6 +46,20 @@ public class MyConcurencyListSet <T> {
         }
         Node tmp = head;
         lock.unlock();
+        while (tmp.getNext() != null) {
+            if (tmp.getValue() == value) {
+                return true;
+            }
+            tmp = tmp.getNext();
+        }
+        return false;
+    }
+    
+    private boolean Contains(T value) {
+        if (head == null) {
+            return false;
+        }
+        Node tmp = head;
         while (tmp.getNext() != null) {
             if (tmp.getValue() == value) {
                 return true;
