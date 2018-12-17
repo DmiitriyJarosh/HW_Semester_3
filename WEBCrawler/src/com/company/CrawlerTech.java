@@ -33,7 +33,7 @@ public class CrawlerTech {
 
             Elements linksOnPage = htmlDocument.select("a[href]");
             System.out.println("Found (" + linksOnPage.size() + ") links");
-            for(Element link : linksOnPage)
+            for (Element link : linksOnPage)
             {
                 links.add(new Pair<>(link.absUrl("href"), url.getValue() + 1));
             }
