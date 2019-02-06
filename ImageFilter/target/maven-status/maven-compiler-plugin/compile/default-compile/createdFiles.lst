@@ -1,0 +1,17 @@
+com\jenkov\MyBenchmark.class
+com\jenkov\FilterAverageHorizontal.class
+com\jenkov\generated\MyBenchmark_MyState_jmhType_B1.class
+com\jenkov\generated\MyBenchmark_jmhType.class
+com\jenkov\generated\MyBenchmark_MyState_jmhType_B2.class
+com\jenkov\generated\MyBenchmark_MyState_jmhType.class
+com\jenkov\generated\MyBenchmark_testMethod_jmhTest.class
+com\jenkov\generated\MyBenchmark_jmhType_B3.class
+com\jenkov\generated\MyBenchmark_MyState_jmhType_B3.class
+META-INF\BenchmarkList
+com\jenkov\generated\MyBenchmark_jmhType_B1.class
+com\jenkov\Main.class
+META-INF\CompilerHints
+com\jenkov\Filter.class
+com\jenkov\FilterAverageVertical.class
+com\jenkov\MyBenchmark$MyState.class
+com\jenkov\generated\MyBenchmark_jmhType_B2.class
